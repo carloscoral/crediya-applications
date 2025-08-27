@@ -11,14 +11,23 @@ spring:
       path: "/h2"
   profiles:
     include: null
+  flyway:
+    enabled: true
+    url: jdbc:postgresql://localhost:5433/crediya-applications
+    user: crediya-applications
+    password: crediya-applications
+    schemas: public
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
 adapters:
   r2dbc:
     host: "localhost"
-    port: 5432
-    database: "crediya"
+    port: 5433
+    database: "crediya-applications"
     schema: "public"
-    username: "crediya"
-    password: "crediya"
+    username: "crediya-applications"
+    password: "crediya-applications"
 management:
   endpoints:
     web:
