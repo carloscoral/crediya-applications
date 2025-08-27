@@ -15,8 +15,8 @@ import lombok.Setter;
 @Builder(toBuilder = true)
 public class LoanType {
     private String name;
-    private String minAmount;
-    private String maxAmount;
+    private BigDecimal minAmount;
+    private BigDecimal maxAmount;
     private BigDecimal interestRate;
     private Boolean automaticValidation;
 }
