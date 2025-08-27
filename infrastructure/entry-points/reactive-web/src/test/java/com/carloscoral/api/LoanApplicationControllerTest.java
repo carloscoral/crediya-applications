@@ -17,14 +17,14 @@ class LoanApplicationControllerTest {
 
     @Test
     void testCommandName() {
-        webTestClient.get()
-                .uri("/api/v1/usecase/path")
+        webTestClient.post()
+                .uri("/api/v1/loan-applications")
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(String.class)
                 .value(userResponse -> {
-                            Assertions.assertThat(userResponse).isEmpty();
+                            Assertions.assertThat(userResponse).isNotNull();
                         }
                 );
     }
