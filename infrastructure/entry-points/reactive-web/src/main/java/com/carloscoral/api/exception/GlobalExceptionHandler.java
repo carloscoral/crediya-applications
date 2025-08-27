@@ -19,6 +19,17 @@ import java.util.List;
 @Slf4j
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(ValidationException.class)
+    public Mono<ResponseEntity<ApiResponse<List<String>>>> handleValidationException(ValidationException validationException) {
+        log.warn("Validation error: {}", validationException.getValidationErrors());
+        
+        ApiResponse<List<String>> errorResponse = ApiResponse.error("Validation failed", validationException.getValidationErrors());
+        
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorResponse));
+    }
+
     @ExceptionHandler({DecodingException.class, JsonParseException.class, JsonProcessingException.class})
     public Mono<ResponseEntity<ApiResponse<Object>>> handleJsonParsingException(Exception exception) {
         log.warn("Invalid JSON format: {}", exception.getMessage());
