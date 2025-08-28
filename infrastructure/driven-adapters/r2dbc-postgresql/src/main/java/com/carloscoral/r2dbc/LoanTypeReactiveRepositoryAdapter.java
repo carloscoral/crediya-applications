@@ -28,6 +28,9 @@ public class LoanTypeReactiveRepositoryAdapter extends ReactiveAdapterOperations
 
     @Override
     public Mono<LoanType> findById(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            return Mono.empty();
+        }
         try {
             UUID uuid = UUID.fromString(id);
             return super.findById(uuid);
