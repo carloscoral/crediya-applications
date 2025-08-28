@@ -15,9 +15,9 @@ import reactor.test.StepVerifier;
 import java.io.IOException;
 
 
-class RestConsumerTest {
+class UserRestConsumerTest {
 
-    private static RestConsumer restConsumer;
+    private static UserRestConsumer userRestConsumer;
 
     private static MockWebServer mockBackEnd;
 
@@ -27,7 +27,7 @@ class RestConsumerTest {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
         var webClient = WebClient.builder().baseUrl(mockBackEnd.url("/").toString()).build();
-        restConsumer = new RestConsumer(webClient);
+        userRestConsumer = new UserRestConsumer(webClient);
     }
 
     @AfterAll
@@ -37,32 +37,32 @@ class RestConsumerTest {
     }
 
     @Test
-    @DisplayName("Validate the function testGet.")
-    void validateTestGet() {
-
+    @DisplayName("Validate user exists - should return true")
+    void validateUserExists() {
         mockBackEnd.enqueue(new MockResponse()
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setResponseCode(HttpStatus.OK.value())
-                .setBody("{\"state\" : \"ok\"}"));
-        var response = restConsumer.testGet();
+                .setBody("{\"success\": true, \"message\": \"User found\", \"data\": true, \"errors\": null}"));
+        
+        var response = userRestConsumer.validateByEmail("test@test.com");
 
         StepVerifier.create(response)
-                .expectNextMatches(objectResponse -> objectResponse.getState().equals("ok"))
+                .expectNextMatches(result -> result.equals(true))
                 .verifyComplete();
     }
 
     @Test
-    @DisplayName("Validate the function testPost.")
-    void validateTestPost() {
-
+    @DisplayName("Validate user does not exist - should return false")
+    void validateUserDoesNotExist() {
         mockBackEnd.enqueue(new MockResponse()
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setResponseCode(HttpStatus.OK.value())
-                .setBody("{\"state\" : \"ok\"}"));
-        var response = restConsumer.testPost();
+                .setBody("{\"success\": true, \"message\": \"User not found\", \"data\": false, \"errors\": null}"));
+        
+        var response = userRestConsumer.validateByEmail("nonexistent@test.com");
 
         StepVerifier.create(response)
-                .expectNextMatches(objectResponse -> objectResponse.getState().equals("ok"))
+                .expectNextMatches(result -> result.equals(false))
                 .verifyComplete();
     }
 }

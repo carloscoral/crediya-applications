@@ -4,16 +4,14 @@ import com.carloscoral.model.loanapplication.LoanApplication;
 import com.carloscoral.r2dbc.entity.LoanApplicationEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.reactivecommons.utils.ObjectMapper;
-import org.springframework.data.domain.Example;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -22,97 +20,110 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class LoanApplicationReactiveRepositoryAdapterTest {
 
-    @InjectMocks
-    LoanApplicationReactiveRepositoryAdapter repositoryAdapter;
-
     @Mock
     LoanApplicationReactiveRepository repository;
 
     @Mock
+    LoanTypeReactiveRepository loanTypeRepository;
+
+    @Mock
+    LoanStatusReactiveRepository loanStatusRepository;
+
+    @Mock
     ObjectMapper mapper;
+
+    LoanApplicationReactiveRepositoryAdapter repositoryAdapter;
+
+    private final UUID TEST_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+    private final UUID TEST_LOAN_TYPE_ID = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+    private final UUID TEST_LOAN_STATUS_ID = UUID.fromString("323e4567-e89b-12d3-a456-426614174000");
 
     private LoanApplicationEntity createTestEntity() {
         return LoanApplicationEntity.builder()
-                .id("1")
-                .amount(new BigDecimal("10000"))
+                .id(TEST_ID)
+                .amount(new BigDecimal("10000.00"))
                 .monthsTerm(12)
                 .email("test@test.com")
+                .loanTypeId(TEST_LOAN_TYPE_ID)
+                .loanStatusId(TEST_LOAN_STATUS_ID)
                 .build();
     }
 
     private LoanApplication createTestDomain() {
         return LoanApplication.builder()
-                .amount(new BigDecimal("10000"))
+                .amount(new BigDecimal("10000.00"))
                 .monthsTerm(12)
                 .email("test@test.com")
+                .loanTypeId(TEST_LOAN_TYPE_ID)
+                .loanStatusId(TEST_LOAN_STATUS_ID)
                 .build();
     }
 
-    @Test
-    void mustFindValueById() {
-        LoanApplicationEntity entity = createTestEntity();
-        LoanApplication domain = createTestDomain();
-
-        when(repository.findById("1")).thenReturn(Mono.just(entity));
-        when(mapper.mapBuilder(eq(entity), eq(LoanApplication.LoanApplicationBuilder.class)))
-                .thenReturn(domain.toBuilder());
-
-        Mono<LoanApplication> result = repositoryAdapter.findById("1");
-
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.getAmount().equals(new BigDecimal("10000")) && value.getEmail().equals("test@test.com"))
-                .verifyComplete();
+    private void setupRepositoryAdapter() {
+        repositoryAdapter = new LoanApplicationReactiveRepositoryAdapter(
+                repository, mapper, loanTypeRepository, loanStatusRepository);
     }
 
     @Test
-    void mustFindAllValues() {
-        LoanApplicationEntity entity = createTestEntity();
-        LoanApplication domain = createTestDomain();
+    void shouldSaveLoanApplication() {
+        setupRepositoryAdapter();
+        LoanApplication domainToSave = createTestDomain();
+        LoanApplicationEntity entityToBeSaved = createTestEntity();
+        LoanApplicationEntity savedEntity = createTestEntity();
+        LoanApplication expectedDomain = createTestDomain();
 
-        when(repository.findAll()).thenReturn(Flux.just(entity));
-        when(mapper.mapBuilder(eq(entity), eq(LoanApplication.LoanApplicationBuilder.class)))
-                .thenReturn(domain.toBuilder());
+        when(mapper.mapBuilder(eq(domainToSave), eq(LoanApplicationEntity.LoanApplicationEntityBuilder.class)))
+                .thenReturn(LoanApplicationEntity.builder()
+                        .id(entityToBeSaved.getId())
+                        .amount(entityToBeSaved.getAmount())
+                        .monthsTerm(entityToBeSaved.getMonthsTerm())
+                        .email(entityToBeSaved.getEmail())
+                        .loanTypeId(entityToBeSaved.getLoanTypeId())
+                        .loanStatusId(entityToBeSaved.getLoanStatusId()));
 
-        Flux<LoanApplication> result = repositoryAdapter.findAll();
+        when(repository.save(any(LoanApplicationEntity.class)))
+                .thenReturn(Mono.just(savedEntity));
+
+        when(mapper.mapBuilder(eq(savedEntity), eq(LoanApplication.LoanApplicationBuilder.class)))
+                .thenReturn(expectedDomain.toBuilder());
+
+        Mono<LoanApplication> result = repositoryAdapter.save(domainToSave);
 
         StepVerifier.create(result)
-                .expectNextMatches(value -> value.getAmount().equals(new BigDecimal("10000")) && value.getEmail().equals("test@test.com"))
+                .expectNextMatches(loanApplication -> 
+                    loanApplication.getAmount().equals(new BigDecimal("10000.00")) &&
+                    loanApplication.getEmail().equals("test@test.com") &&
+                    loanApplication.getMonthsTerm().equals(12) &&
+                    loanApplication.getLoanTypeId().equals(TEST_LOAN_TYPE_ID) &&
+                    loanApplication.getLoanStatusId().equals(TEST_LOAN_STATUS_ID)
+                )
                 .verifyComplete();
     }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    void mustFindByExample() {
-        LoanApplicationEntity entity = createTestEntity();
-        LoanApplication domain = createTestDomain();
-        LoanApplication example = createTestDomain();
-        
-        when(mapper.map(eq(example), eq(LoanApplicationEntity.class))).thenReturn(entity);
-        when(repository.findAll(any(Example.class))).thenReturn(Flux.just(entity));
-        when(mapper.mapBuilder(eq(entity), eq(LoanApplication.LoanApplicationBuilder.class)))
-                .thenReturn(domain.toBuilder());
 
-        Flux<LoanApplication> result = repositoryAdapter.findByExample(example);
-
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.getAmount().equals(new BigDecimal("10000")) && value.getEmail().equals("test@test.com"))
-                .verifyComplete();
-    }
 
     @Test
-    void mustSaveValue() {
-        LoanApplicationEntity entity = createTestEntity();
-        LoanApplication domain = createTestDomain();
+    void shouldPropagateRepositoryErrorOnSave() {
+        setupRepositoryAdapter();
+        LoanApplication domainToSave = createTestDomain();
+        LoanApplicationEntity entityToBeSaved = createTestEntity();
+        RuntimeException repositoryError = new RuntimeException("Database connection failed");
 
-        when(mapper.map(eq(domain), eq(LoanApplicationEntity.class))).thenReturn(entity);
-        when(repository.save(eq(entity))).thenReturn(Mono.just(entity));
-        when(mapper.mapBuilder(eq(entity), eq(LoanApplication.LoanApplicationBuilder.class)))
-                .thenReturn(domain.toBuilder());
+        when(mapper.mapBuilder(eq(domainToSave), eq(LoanApplicationEntity.LoanApplicationEntityBuilder.class)))
+                .thenReturn(LoanApplicationEntity.builder()
+                        .id(entityToBeSaved.getId())
+                        .amount(entityToBeSaved.getAmount())
+                        .monthsTerm(entityToBeSaved.getMonthsTerm())
+                        .email(entityToBeSaved.getEmail())
+                        .loanTypeId(entityToBeSaved.getLoanTypeId())
+                        .loanStatusId(entityToBeSaved.getLoanStatusId()));
 
-        Mono<LoanApplication> result = repositoryAdapter.save(domain);
+        when(repository.save(any(LoanApplicationEntity.class)))
+                .thenReturn(Mono.error(repositoryError));
 
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.getAmount().equals(new BigDecimal("10000")) && value.getEmail().equals("test@test.com"))
-                .verifyComplete();
+
+        StepVerifier.create(repositoryAdapter.save(domainToSave))
+                .expectError(RuntimeException.class)
+                .verify();
     }
 }

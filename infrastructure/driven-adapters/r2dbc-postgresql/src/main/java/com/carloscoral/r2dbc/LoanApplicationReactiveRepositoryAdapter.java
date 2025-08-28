@@ -40,7 +40,7 @@ public class LoanApplicationReactiveRepositoryAdapter extends ReactiveAdapterOpe
                 loanApplication,
                 LoanApplicationEntity.LoanApplicationEntityBuilder.class
                 ).build())
-                .map(this::toEntity);
+                .map(entity -> mapper.mapBuilder(entity, LoanApplication.LoanApplicationBuilder.class).build());
     }
 
 }
