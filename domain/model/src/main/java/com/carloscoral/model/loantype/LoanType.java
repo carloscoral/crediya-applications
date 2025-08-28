@@ -2,6 +2,7 @@ package com.carloscoral.model.loantype;
 import lombok.Builder;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class LoanType {
+    private UUID id;
     private String name;
     private BigDecimal minAmount;
     private BigDecimal maxAmount;

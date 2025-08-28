@@ -1,6 +1,8 @@
 package com.carloscoral.api.exception;
 
 import com.carloscoral.api.dto.ApiResponse;
+import com.carloscoral.exception.IllegalLoanStatusException;
+import com.carloscoral.exception.IllegalLoanTypeException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
@@ -70,6 +72,28 @@ public class GlobalExceptionHandler {
         ApiResponse<Object> errorResponse = ApiResponse.error("Internal server error occurred");
         
         return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorResponse));
+    }
+
+    @ExceptionHandler(IllegalLoanTypeException.class)
+    public Mono<ResponseEntity<ApiResponse<Object>>> handleIllegalLoanTypeException(IllegalLoanTypeException exception) {
+        log.warn("Illegal loan type exception: {}", exception.getMessage());
+        
+        ApiResponse<Object> errorResponse = ApiResponse.error(exception.getMessage());
+        
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorResponse));
+    }
+
+    @ExceptionHandler(IllegalLoanStatusException.class)
+    public Mono<ResponseEntity<ApiResponse<Object>>> handleIllegalLoanStatusException(IllegalLoanStatusException exception) {
+        log.warn("Illegal loan status exception: {}", exception.getMessage());
+        
+        ApiResponse<Object> errorResponse = ApiResponse.error(exception.getMessage());
+        
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(errorResponse));
     }

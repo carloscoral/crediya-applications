@@ -2,9 +2,8 @@ package com.carloscoral.api;
 
 import com.carloscoral.api.dto.ApiResponse;
 import com.carloscoral.api.dto.CreateLoanApplicationRequest;
-import com.carloscoral.api.exception.ValidationException;
 
-        import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;

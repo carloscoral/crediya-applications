@@ -21,9 +21,6 @@ public class LoanApplicationReactiveRepositoryAdapter extends ReactiveAdapterOpe
         LoanApplicationReactiveRepository
 > implements LoanApplicationRepository {
 
-    private final LoanTypeReactiveRepository loanTypeRepository;
-    private final LoanStatusReactiveRepository loanStatusRepository;
-
     public LoanApplicationReactiveRepositoryAdapter(LoanApplicationReactiveRepository repository, 
                                                   ObjectMapper mapper,
                                                   LoanTypeReactiveRepository loanTypeRepository,
@@ -34,31 +31,16 @@ public class LoanApplicationReactiveRepositoryAdapter extends ReactiveAdapterOpe
          *  Or using mapper.map with the class of the object model
          */
         super(repository, mapper, d -> mapper.mapBuilder(d, LoanApplication.LoanApplicationBuilder.class).build());
-        this.loanTypeRepository = loanTypeRepository;
-        this.loanStatusRepository = loanStatusRepository;
     }
 
     @Transactional
     @Override
     public Mono<LoanApplication> save(LoanApplication loanApplication) {
-        return Mono.zip(
-                loanTypeRepository.findByName(loanApplication.getLoanType().getName())
-                        .switchIfEmpty(Mono.error(new RuntimeException("LoanType not found: " + loanApplication.getLoanType().getName()))),
-                loanStatusRepository.findByName(loanApplication.getLoanStatus().getName())
-                        .switchIfEmpty(Mono.error(new RuntimeException("LoanStatus not found: " + loanApplication.getLoanStatus().getName())))
-        )
-        .flatMap(tuple -> {
-            LoanApplicationEntity entity = LoanApplicationEntity.builder()
-                    .amount(loanApplication.getAmount())
-                    .monthsTerm(loanApplication.getMonthsTerm())
-                    .email(loanApplication.getEmail())
-                    .loanTypeId(tuple.getT1().getId())
-                    .loanStatusId(tuple.getT2().getId())
-                    .build();
-            
-            return repository.save(entity);
-        })
-        .map(this::toEntity);
+        return repository.save(mapper.mapBuilder(
+                loanApplication,
+                LoanApplicationEntity.LoanApplicationEntityBuilder.class
+                ).build())
+                .map(this::toEntity);
     }
 
 }

@@ -1,9 +1,7 @@
 package com.carloscoral.model.loanapplication;
-import com.carloscoral.model.loantype.LoanType;
 
 import java.math.BigDecimal;
-
-import com.carloscoral.model.loanstatus.LoanStatus;
+import java.util.UUID;
 
 import lombok.Builder;
 import lombok.AllArgsConstructor;
@@ -20,6 +18,6 @@ public class LoanApplication {
     private BigDecimal amount;
     private Integer monthsTerm;
     private String email;
-    private LoanType loanType;
-    private LoanStatus loanStatus;
+    private UUID loanTypeId;
+    private UUID loanStatusId;
 }

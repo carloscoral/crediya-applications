@@ -40,7 +40,7 @@ public class CreateLoanApplicationRequest {
     private String email;
 
     @NotBlank(message = "Loan type ID is required")
-    @Size(max = 50, message = "Loan type ID cannot exceed 50 characters")
+    @org.hibernate.validator.constraints.UUID(message = "Loan type ID must be a valid UUID")
     @Schema(description = "UUID of the loan type being requested", 
             example = "123e4567-e89b-12d3-a456-426614174000")
     private String loanTypeId;
