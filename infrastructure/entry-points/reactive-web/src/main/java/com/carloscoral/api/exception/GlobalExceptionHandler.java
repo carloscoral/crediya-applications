@@ -3,6 +3,7 @@ package com.carloscoral.api.exception;
 import com.carloscoral.api.dto.ApiResponse;
 import com.carloscoral.exception.IllegalLoanStatusException;
 import com.carloscoral.exception.IllegalLoanTypeException;
+import com.carloscoral.exception.UserNotFoundException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
@@ -90,6 +91,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalLoanStatusException.class)
     public Mono<ResponseEntity<ApiResponse<Object>>> handleIllegalLoanStatusException(IllegalLoanStatusException exception) {
         log.warn("Illegal loan status exception: {}", exception.getMessage());
+        
+        ApiResponse<Object> errorResponse = ApiResponse.error(exception.getMessage());
+        
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorResponse));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public Mono<ResponseEntity<ApiResponse<Object>>> handleUserNotFoundException(UserNotFoundException exception) {
+        log.warn("User not found exception: {}", exception.getMessage());
         
         ApiResponse<Object> errorResponse = ApiResponse.error(exception.getMessage());
         
