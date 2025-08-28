@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.UUID;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -14,7 +17,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Table("loan_status")
 public class LoanStatusEntity {
     @Id
-    private String id;
+    private UUID id;
 
     private String name;
     
