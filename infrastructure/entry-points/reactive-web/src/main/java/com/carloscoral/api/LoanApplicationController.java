@@ -2,7 +2,9 @@ package com.carloscoral.api;
 
 import com.carloscoral.api.dto.ApiResponse;
 import com.carloscoral.api.dto.CreateLoanApplicationRequest;
-import io.swagger.v3.oas.annotations.Operation;
+import com.carloscoral.api.exception.ValidationException;
+
+        import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,6 +22,8 @@ import reactor.core.publisher.Mono;
 @RequestMapping(value = "/api/v1", produces = MediaType.APPLICATION_JSON_VALUE)
 @AllArgsConstructor
 public class LoanApplicationController {
+
+    private final LoanApplicationService loanApplicationService;
 
     @PostMapping(path = "/loan-applications")
     @Operation(
@@ -97,6 +101,7 @@ public class LoanApplicationController {
             )
     )
     public Mono<ResponseEntity<ApiResponse<String>>> createLoanApplication(@org.springframework.web.bind.annotation.RequestBody CreateLoanApplicationRequest request) {
-        return Mono.just(ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Hello World")));
+        return loanApplicationService.createLoanApplication(request)
+                .map(message -> ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(message)));
     }
 }
