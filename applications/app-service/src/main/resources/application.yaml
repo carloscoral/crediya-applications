@@ -1,14 +1,84 @@
-##Spring Configuration
 server:
-  port: 8080
+  port: 8081
 spring:
   application:
-    name: crediya-requests
+    name: "crediya-applications"
   devtools:
     add-properties: false
   h2:
     console:
       enabled: true
-      path: /h2
+      path: "/h2"
   profiles:
-    include:
+    include: null
+  flyway:
+    enabled: true
+    url: "jdbc:postgresql://localhost:5433/crediya-applications"
+    user: "crediya-applications"
+    password: "crediya-applications"
+    schemas: "public"
+    locations: "classpath:db/migration"
+    baseline-on-migrate: true
+    validate-on-migrate: true
+adapters:
+  r2dbc:
+    host: "localhost"
+    port: 5433
+    database: "crediya-applications"
+    schema: "public"
+    username: "crediya-applications"
+    password: "crediya-applications"
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,prometheus"
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    circuitbreakers:
+      enabled: true
+cors:
+  allowed-origins: "http://localhost:4200,http://localhost:8080"
+springdoc:
+  api-docs:
+    enabled: true
+    path: "/api-docs"
+  swagger-ui:
+    enabled: true
+    path: "/swagger-ui.html"
+    operationsSorter: "method"
+    tagsSorter: "alpha"
+    tryItOutEnabled: true
+    displayRequestDuration: true
+    defaultModelsExpandDepth: 2
+    defaultModelExpandDepth: 2
+  show-actuator: false
+  use-management-port: false
+adapter:
+  restconsumer:
+    timeout: 5000
+    url: "http://localhost:8080/api"
+resilience4j:
+  circuitbreaker:
+    instances:
+      testGet:
+        registerHealthIndicator: true
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: "2s"
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 10
+        waitDurationInOpenState: "10s"
+      testPost:
+        registerHealthIndicator: true
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: "2s"
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 10
+        waitDurationInOpenState: "10s"

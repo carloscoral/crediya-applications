@@ -1,6 +1,11 @@
 package com.carloscoral.config;
 
+import com.carloscoral.model.loanapplication.gateways.LoanApplicationRepository;
+import com.carloscoral.model.loantype.gateways.LoanTypeRepository;
+import com.carloscoral.model.loanstatus.gateways.LoanStatusRepository;
+import com.carloscoral.model.user.gateways.ValidationUserGateway;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,13 +27,33 @@ public class UseCasesConfigTest {
                 }
             }
 
-            assertTrue(useCaseBeanFound, "No beans ending with 'Use Case' were found");
+            assertTrue(useCaseBeanFound, "No beans ending with 'UseCase' were found");
         }
     }
 
     @Configuration
     @Import(UseCasesConfig.class)
     static class TestConfig {
+
+        @Bean
+        public LoanApplicationRepository loanApplicationRepository() {
+            return Mockito.mock(LoanApplicationRepository.class);
+        }
+
+        @Bean
+        public LoanTypeRepository loanTypeRepository() {
+            return Mockito.mock(LoanTypeRepository.class);
+        }
+
+        @Bean
+        public LoanStatusRepository loanStatusRepository() {
+            return Mockito.mock(LoanStatusRepository.class);
+        }
+
+        @Bean
+        public ValidationUserGateway validationUserGateway() {
+            return Mockito.mock(ValidationUserGateway.class);
+        }
 
         @Bean
         public MyUseCase myUseCase() {
